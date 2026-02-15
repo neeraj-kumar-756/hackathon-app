@@ -32,6 +32,11 @@ class Employee(db.Model):
     designation = db.Column(db.String(100), nullable=False)
     joining_date = db.Column(db.Date, nullable=False)
     basic_salary = db.Column(db.Float, nullable=False)
+    pan = db.Column(db.String(20), nullable=True)
+    uan = db.Column(db.String(20), nullable=True)
+    pf_number = db.Column(db.String(20), nullable=True)
+    esi_number = db.Column(db.String(20), nullable=True)
+    department = db.Column(db.String(50), nullable=True)
 
 class Payroll(db.Model):
     __tablename__ = 'payrolls'
@@ -41,6 +46,7 @@ class Payroll(db.Model):
     month = db.Column(db.String(20), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     net_salary = db.Column(db.Float, nullable=False)
+    attendance_days = db.Column(db.Integer, default=0)
     generated_at = db.Column(db.DateTime, default=db.func.now())
 
     employee = db.relationship('Employee', backref=db.backref('payrolls', lazy=True))
