@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Payroll AI Assistant</h5>
+                </div>
+                <div class="card-body" id="chat-container" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+                    <div class="d-flex justify-content-start mb-3">
+                        <div class="p-3 rounded bg-white border shadow-sm" style="max-width: 80%;">
+                            <strong>AI:</strong> Hello! I can help you with payroll management, compliance reports, and labor regulations. How can I assist you today?
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="input-group">
+                        <input type="text" id="user-input" class="form-control" placeholder="Type your question here..." autocomplete="off">
+                        <button class="btn btn-primary" type="button" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+
+    function appendMessage(role, text, isError = false) {
+        const align = role === 'You' ? 'justify-content-end' : 'justify-content-start';
+        const bg = role === 'You' ? 'bg-primary text-white' : 'bg-white border shadow-sm';
+        const textClass = isError ? 'text-danger' : '';
+        
+        const html = `
+            <div class="d-flex ${align} mb-3">
+                <div class="p-3 rounded ${bg} ${textClass}" style="max-width: 80%;">
+                    <strong>${role}:</strong> ${text}
+                </div>
+            </div>
+        `;
+        chatContainer.insertAdjacentHTML('beforeend', html);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        appendMessage('You', message);
+        userInput.value = '';
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+            
+            const data = await response.json();
+            if (data.error) {
+                appendMessage('System', 'Error: ' + data.error, true);
+            } else {
+                appendMessage('AI', data.response);
+            }
+        } catch (error) {
+            appendMessage('System', 'Network error occurred.', true);
+        }
+    }
+
+    userInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+</script>
+{% endblock %}
