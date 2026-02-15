@@ -5,9 +5,12 @@ from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import HRFlowable
 
-def generate_muster_roll(filename="Monthly_Muster_Roll_Feb_2026.pdf", employees=None):
+def generate_muster_roll(filename="Monthly_Muster_Roll_Feb_2026.pdf", employees=None, company=None):
+    if company is None:
+        company = {}
 
-    doc = SimpleDocTemplate(filename, pagesize=A4)
+    # Reduce margins to allow wider tables
+    doc = SimpleDocTemplate(filename, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
     elements = []
 
     styles = getSampleStyleSheet()
@@ -21,12 +24,13 @@ def generate_muster_roll(filename="Monthly_Muster_Roll_Feb_2026.pdf", employees=
 
     # Company Info Table
     company_data = [
-        ["Organization:", "XYZ Pvt Ltd", "Month:", "February 2026"],
-        ["Address:", "Delhi NCR", "PF Account:", "DL/ABC/12345"],
-        ["ESI Code:", "270000000000000001", "PT Circle:", "Delhi"]
+        ["Organization:", company.get('name', "XYZ Pvt Ltd"), "Month:", "February 2026"],
+        ["Address:", Paragraph(company.get('address', "Delhi NCR"), styles["Normal"]), "PF Account:", company.get('pf_code', "DL/ABC/12345")],
+        ["ESI Code:", company.get('esi_code', "270000000000000001"), "PT Circle:", company.get('pt_circle', "Delhi")]
     ]
 
-    company_table = Table(company_data, colWidths=[90, 150, 90, 120])
+    # Increased width for address column (index 1) and adjusted others to fit page
+    company_table = Table(company_data, colWidths=[80, 230, 80, 120])
     company_table.setStyle(TableStyle([
         ('GRID', (0,0), (-1,-1), 1, colors.black),
         ('BACKGROUND', (0,0), (-1,0), colors.whitesmoke),
@@ -72,7 +76,8 @@ def generate_muster_roll(filename="Monthly_Muster_Roll_Feb_2026.pdf", employees=
         ["TOTAL", f"{total_count} Employees", "-", "-", "-", "-"]
     ]
 
-    totals_table = Table(totals_data, colWidths=[70, 90, 110, 110, 80, 80])
+    # Adjusted totals table widths to fit within new margins
+    totals_table = Table(totals_data, colWidths=[70, 90, 100, 100, 80, 80])
     totals_table.setStyle(TableStyle([
         ('GRID', (0,0), (-1,-1), 1, colors.black),
         ('BACKGROUND', (0,0), (-1,-1), colors.whitesmoke),

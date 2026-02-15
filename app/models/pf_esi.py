@@ -5,7 +5,9 @@ from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import HRFlowable
 
-def generate_pf_esi_summary(filename="PF_ESI_Monthly_Summary_Feb_2026.pdf", employees=None):
+def generate_pf_esi_summary(filename="PF_ESI_Monthly_Summary_Feb_2026.pdf", employees=None, company=None):
+    if company is None:
+        company = {}
 
     doc = SimpleDocTemplate(filename, pagesize=A4)
     elements = []
@@ -19,9 +21,9 @@ def generate_pf_esi_summary(filename="PF_ESI_Monthly_Summary_Feb_2026.pdf", empl
 
     # Organization Info
     org_data = [
-        ["Organization:", "XYZ Pvt Ltd"],
-        ["PF Account:", "DL/ABC/12345"],
-        ["ESI Code:", "270000000000000001"]
+        ["Organization:", company.get('name', "XYZ Pvt Ltd")],
+        ["PF Account:", company.get('pf_code', "DL/ABC/12345")],
+        ["ESI Code:", company.get('esi_code', "270000000000000001")]
     ]
 
     org_table = Table(org_data, colWidths=[120, 300])
