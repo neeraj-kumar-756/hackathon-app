@@ -1,5 +1,8 @@
 from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for
 import os
+from app.models.model import Employee, Company, Payroll, db
+from sqlalchemy import func
+from datetime import datetime
 
 # Try importing SarvamAI, handle if not present
 try:
@@ -36,11 +39,36 @@ def chat_api():
     try:
         client = SarvamAI(api_subscription_key=api_key)
         
+        # Fetch Context Data from Database
+        # 1. Company Info
+        company = Company.query.first()
+        company_details = "Not Configured"
+        if company:
+            company_details = f"Name: {company.name}, Address: {company.address}, PF Code: {company.pf_code}, ESI Code: {company.esi_code}"
+
+        # 2. Employee Stats & List
+        total_employees = Employee.query.count()
+        employees = Employee.query.all()
+        emp_list_str = "; ".join([f"{e.name} ({e.designation}, {e.department or 'N/A'})" for e in employees])
+
+        # 3. Payroll Stats
+        now = datetime.now()
+        current_month = now.strftime('%B')
+        current_year = now.year
+        payroll_processed = db.session.query(func.sum(Payroll.net_salary)).filter_by(month=current_month, year=current_year).scalar() or 0.0
+
         # Personalize the AI context for your MSME Payroll Software
         system_context = (
             "You are a helpful AI assistant for an open-source payroll software designed for MSMEs. "
-            "The software automates payroll data management, generates legally compliant registers, "
-            "reports, and returns for labor regulations. Assist the user with their queries."
+            "You have access to the following live system data:\n"
+            f"Company: {company_details}\n"
+            f"Current Month: {current_month} {current_year}\n"
+            f"Total Employees: {total_employees}\n"
+            f"Payroll Processed: Rs. {payroll_processed:,.2f}\n"
+            f"Employee Directory: {emp_list_str}\n\n"
+            "The software automates oss msme finance management, generates legally compliant registers (Muster Roll), "
+            "reports (Form 16, PF/ESI), and returns for labor regulations. "
+            "Answer user queries based on this data. If asked about specific employees, use the directory."
         )
 
         response = client.chat.completions(
