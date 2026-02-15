@@ -13,7 +13,10 @@
                 <div class="card-body">
                     <h5 class="card-title">Form 16 (Part A)</h5>
                     <p class="card-text">Certificate under Section 203 of the Income-tax Act, 1961 for tax deducted at source on salary.</p>
-                    <a href="{{ url_for('report.generate_report', report_type='form16') }}" class="btn btn-outline-primary w-100">Download PDF</a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('report.generate_report', report_type='form16', action='view') }}" target="_blank" class="btn btn-outline-primary w-50">Preview</a>
+                        <a href="{{ url_for('report.generate_report', report_type='form16', action='download') }}" class="btn btn-primary w-50">Download</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -26,7 +29,10 @@
                 <div class="card-body">
                     <h5 class="card-title">Muster Roll</h5>
                     <p class="card-text">Monthly register of wages and attendance as required by labor laws for maintaining employee records.</p>
-                    <a href="{{ url_for('report.generate_report', report_type='muster') }}" class="btn btn-outline-success w-100">Download PDF</a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('report.generate_report', report_type='muster', action='view') }}" target="_blank" class="btn btn-outline-success w-50">Preview</a>
+                        <a href="{{ url_for('report.generate_report', report_type='muster', action='download') }}" class="btn btn-success w-50">Download</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -40,7 +46,10 @@
                 <div class="card-body">
                     <h5 class="card-title">PF & ESI Summary</h5>
                     <p class="card-text">Monthly contribution summary for Provident Fund and Employee State Insurance filings.</p>
-                    <a href="{{ url_for('report.generate_report', report_type='pf_esi') }}" class="btn btn-outline-warning w-100">Download PDF</a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('report.generate_report', report_type='pf_esi', action='view') }}" target="_blank" class="btn btn-outline-warning w-50">Preview</a>
+                        <a href="{{ url_for('report.generate_report', report_type='pf_esi', action='download') }}" class="btn btn-warning w-50">Download</a>
+                    </div>
                 </div>
             </div>
         </div>

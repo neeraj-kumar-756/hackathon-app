@@ -5,10 +5,12 @@ from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import HRFlowable
 
-def generate_form16(filename="Form16_FY_2025_26.pdf", data=None):
+def generate_form16(filename="Form16_FY_2025_26.pdf", data=None, company=None):
 
     if data is None:
         data = {}
+    if company is None:
+        company = {}
     doc = SimpleDocTemplate(filename, pagesize=A4)
     elements = []
 
@@ -25,9 +27,9 @@ def generate_form16(filename="Form16_FY_2025_26.pdf", data=None):
     # Employer Details
     employer_data = [
         ["Employer Details", ""],
-        ["Name:", "XYZ Pvt Ltd"],
-        ["PAN:", "AAAPZ1234C"],
-        ["TAN:", "DELC12345D"]
+        ["Name:", company.get('name', "XYZ Pvt Ltd")],
+        ["PAN:", company.get('pan', "AAAPZ1234C")],
+        ["TAN:", company.get('tan', "DELC12345D")]
     ]
 
     employer_table = Table(employer_data, colWidths=[120, 300])

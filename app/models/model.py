@@ -50,3 +50,16 @@ class Payroll(db.Model):
     generated_at = db.Column(db.DateTime, default=db.func.now())
 
     employee = db.relationship('Employee', backref=db.backref('payrolls', lazy=True))
+
+class Company(db.Model):
+    __tablename__ = 'companies'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(255))
+    gst_number = db.Column(db.String(20))
+    pan_number = db.Column(db.String(20))
+    tan_number = db.Column(db.String(20))
+    pf_code = db.Column(db.String(20))
+    esi_code = db.Column(db.String(20))
+    pt_circle = db.Column(db.String(50))

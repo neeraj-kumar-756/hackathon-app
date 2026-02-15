@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, session, redirect, url_for, flash, send_file, current_app
-from app.models.model import User, Employee
+from flask import Blueprint, render_template, session, redirect, url_for, flash, send_file, current_app, request
+from app.models.model import User, Employee, Company
 from app.models.Form_16 import generate_form16
 from app.models.muster_roll import generate_muster_roll
 from app.models.pf_esi import generate_pf_esi_summary
-import os
+import io
 
 report_bp = Blueprint('report', __name__)
 
@@ -28,14 +28,24 @@ def generate_report(report_type):
     
     user_id = session['user_id']
     user_role = session.get('user_role')
-    docs_dir = os.path.join(current_app.root_path, 'docs')
     
-    if not os.path.exists(docs_dir):
-        os.makedirs(docs_dir)
-    
+    # Fetch Company Details
+    company = Company.query.first()
+    company_data = {
+        'name': company.name if company else "XYZ Pvt Ltd",
+        'address': company.address if company else "Delhi NCR",
+        'pan': company.pan_number if company else "AAAPZ1234C",
+        'tan': company.tan_number if company else "DELC12345D",
+        'pf_code': company.pf_code if company else "DL/ABC/12345",
+        'esi_code': company.esi_code if company else "270000000000000001",
+        'pt_circle': company.pt_circle if company and company.pt_circle else "Delhi"
+    }
+
+    buffer = io.BytesIO()
+    filename = "Report.pdf"
+
     if report_type == 'form16':
         filename = f"Form16_{user_id}.pdf"
-        filepath = os.path.join(docs_dir, filename)
         
         # Fetch data for the logged-in user or a default employee
         current_user = User.query.get(user_id)
@@ -59,7 +69,7 @@ def generate_report(report_type):
                 'taxable_salary': f"Rs. {max(0, annual_salary - 50000):,.2f}" # Standard deduction
             }
         
-        generate_form16(filepath, data)
+        generate_form16(buffer, data, company_data)
         
     elif report_type == 'muster':
         if user_role != 'admin':
@@ -67,7 +77,6 @@ def generate_report(report_type):
             return redirect(url_for('report.report'))
             
         filename = f"MusterRoll_{user_id}.pdf"
-        filepath = os.path.join(docs_dir, filename)
         
         employees = Employee.query.all()
         emp_list = []
@@ -83,7 +92,7 @@ def generate_report(report_type):
                 'esi': f"{emp.basic_salary * 0.0075:.2f}"
             })
             
-        generate_muster_roll(filepath, emp_list)
+        generate_muster_roll(buffer, emp_list, company_data)
         
     elif report_type == 'pf_esi':
         if user_role != 'admin':
@@ -91,7 +100,6 @@ def generate_report(report_type):
             return redirect(url_for('report.report'))
             
         filename = f"PF_ESI_{user_id}.pdf"
-        filepath = os.path.join(docs_dir, filename)
         
         employees = Employee.query.all()
         emp_list = []
@@ -108,9 +116,13 @@ def generate_report(report_type):
                 'total_esi': f"{esi + (esi * (3.25/0.75)):.2f}"
             })
             
-        generate_pf_esi_summary(filepath, emp_list)
+        generate_pf_esi_summary(buffer, emp_list, company_data)
     else:
         flash('Invalid report type')
         return redirect(url_for('report.report'))
         
-    return send_file(filepath, as_attachment=True)
+    buffer.seek(0)
+    action = request.args.get('action', 'view')
+    as_attachment = (action == 'download')
+    
+    return send_file(buffer, as_attachment=as_attachment, download_name=filename, mimetype='application/pdf')
