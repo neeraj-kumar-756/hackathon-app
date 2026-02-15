@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Admin Dashboard</h2>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Total Employees</div>
+                <div class="card-body">
+                    <h5 class="card-title">150</h5>
+                    <p class="card-text">Active staff members</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Payroll Processed</div>
+                <div class="card-body">
+                    <h5 class="card-title">$45,000</h5>
+                    <p class="card-text">For current month</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Pending Reports</div>
+                <div class="card-body">
+                    <h5 class="card-title">12</h5>
+                    <p class="card-text">Requires attention</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-header">Compliance Issues</div>
+                <div class="card-body">
+                    <h5 class="card-title">3</h5>
+                    <p class="card-text">Critical alerts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphs Section -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Payroll Trends (Last 6 Months)
+                </div>
+                <div class="card-body">
+                    <canvas id="payrollChart" width="100%" height="40"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Employee Distribution
+                </div>
+                <div class="card-body">
+                    <canvas id="deptChart" width="100%" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Payroll Chart
+    const ctx = document.getElementById('payrollChart').getContext('2d');
+    const payrollChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Total Salary Disbursed ($)',
+                data: [40000, 42000, 41000, 45000, 46000, 45000],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                tension: 0.1
+            }]
+        }
+    });
+
+    // Department Chart
+    const ctx2 = document.getElementById('deptChart').getContext('2d');
+    const deptChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['IT', 'HR', 'Sales', 'Ops'],
+            datasets: [{
+                data: [30, 10, 40, 20],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)'
+                ]
+            }]
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('addEmployeeForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const tbody = document.getElementById('employeeTableBody');
+                        const newRow = `
+                            <tr>
+                                <td>${data.employee.name}</td>
+                                <td>${data.employee.designation}</td>
+                                <td>${data.employee.email}</td>
+                                <td>${data.employee.joining_date}</td>
+                                <td>${data.employee.basic_salary}</td>
+                            </tr>
+                        `;
+                        tbody.insertAdjacentHTML('beforeend', newRow);
+                        this.reset();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        }
+    });
+</script>
+
+<div class="mt-4">
+    <h3>Employee Management</h3>
+    <!-- Add Employee Form -->
+    <div class="card mb-4">
+        <div class="card-header">Add New Employee</div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('employee.employee_dashboard') }}">
+            <form id="addEmployeeForm" method="POST" action="{{ url_for('employee.employee_dashboard') }}">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Designation</label>
+                        <input type="text" name="designation" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Basic Salary</label>
+                        <input type="number" step="0.01" name="salary" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Joining Date</label>
+                        <input type="date" name="join_date" class="form-control" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Add Employee</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Employee List -->
+    <div class="card">
+        <div class="card-header">Employee List</div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Designation</th>
+                        <th>Email</th>
+                        <th>Joining Date</th>
+                        <th>Salary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tbody id="employeeTableBody">
+                    {% for emp in employees %}
+                    <tr>
+                        <td>{{ emp.name }}</td>
+                        <td>{{ emp.designation }}</td>
+                        <td>{{ emp.email }}</td>
+                        <td>{{ emp.joining_date }}</td>
+                        <td>{{ emp.basic_salary }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">No employees found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

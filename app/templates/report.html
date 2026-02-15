@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Reports Center</h2>
+    <p class="text-muted">Generate and download compliant reports based on your role.</p>
+    
+    <div class="row mt-4">
+        <!-- Monthly Muster Roll: Admin only -->
+        {% if user.role == 'admin' %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white">Compliance</div>
+                <div class="card-body">
+                    <h5 class="card-title">Monthly Muster Roll</h5>
+                    <p class="card-text">Generate the attendance and wage register (Muster Roll) for the current month.</p>
+                    <button onclick="showPreview('Monthly Muster Roll', 'muster_roll.pdf')" class="btn btn-outline-primary w-100">Generate & Preview</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PF/ESI Summary: Admin only -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-info">
+                <div class="card-header bg-info text-white">Summary</div>
+                <div class="card-body">
+                    <h5 class="card-title">PF/ESI Summary</h5>
+                    <p class="card-text">Consolidated summary of Provident Fund and ESI contributions.</p>
+                    <button onclick="showPreview('PF/ESI Summary', 'pf_esi_summary.pdf')" class="btn btn-outline-info w-100">Generate & Preview</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Form 16: Employee & Admin -->
+        {% if user.role in ['admin', 'employee', 'user'] %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-success">
+                <div class="card-header bg-success text-white">Taxation</div>
+                <div class="card-body">
+                    <h5 class="card-title">Form 16 (TDS)</h5>
+                    <p class="card-text">Download your TDS certificate (Form 16) for income tax filing.</p>
+                    <button onclick="showPreview('Form 16 TDS Certificate', 'form16.pdf')" class="btn btn-outline-success w-100">Generate & Preview</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Preview Section (Hidden by default) -->
+    <div id="preview-container" class="row mt-5" style="display: none;">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" id="preview-title">Report Preview</h5>
+                    <button class="btn btn-danger btn-sm" onclick="closePreview()">Close</button>
+                </div>
+                <div class="card-body text-center">
+                    <div class="alert alert-secondary" role="alert">
+                        Preview generated successfully. Click download to save the file.
+                    </div>
+                    <!-- Placeholder for PDF Preview -->
+                    <div class="bg-light border mb-3 p-5" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+                        <h3 class="text-muted">PDF Preview Window</h3>
+                    </div>
+                    
+                    <a id="download-btn" href="#" class="btn btn-primary btn-lg">Download PDF</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showPreview(title, filename) {
+        document.getElementById('preview-title').innerText = 'Preview: ' + title;
+        document.getElementById('preview-container').style.display = 'block';
+        document.getElementById('preview-container').scrollIntoView({behavior: 'smooth'});
+        document.getElementById('download-btn').setAttribute('download', filename);
+    }
+
+    function closePreview() {
+        document.getElementById('preview-container').style.display = 'none';
+    }
+</script>
+{% endblock %}
