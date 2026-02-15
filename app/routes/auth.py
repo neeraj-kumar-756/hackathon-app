@@ -1,5 +1,7 @@
 from flask import Blueprint,redirect,render_template,url_for,flash,session,request
 from app.models.model import User, db
+import os
+from flask import current_app
 
 auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/')
@@ -60,6 +62,18 @@ def signup():
 
 @auth_bp.route('/logout')
 def logout():
+    if 'user_id' in session:
+        # Cleanup temporary report files
+        user_id = session['user_id']
+        docs_dir = os.path.join(current_app.root_path, 'docs')
+        if os.path.exists(docs_dir):
+            for f in os.listdir(docs_dir):
+                if f.endswith(f"_{user_id}.pdf"):
+                    try:
+                        os.remove(os.path.join(docs_dir, f))
+                    except:
+                        pass
+
     session.clear()
     flash('You have been logged out.')
     return redirect(url_for('auth.login'))
