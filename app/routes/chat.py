@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for
 import os
-from app.models.model import Employee, Company, Payroll, db
+from app.models.model import Employee, Company, Payroll, User, db
 from sqlalchemy import func
 from datetime import datetime
 
@@ -39,36 +39,63 @@ def chat_api():
     try:
         client = SarvamAI(api_subscription_key=api_key)
         
-        # Fetch Context Data from Database
+        # Fetch Context Data from Database (RAG - Retrieval Augmented Generation)
+        
         # 1. Company Info
         company = Company.query.first()
-        company_details = "Not Configured"
+        company_info = "Not Configured"
         if company:
-            company_details = f"Name: {company.name}, Address: {company.address}, PF Code: {company.pf_code}, ESI Code: {company.esi_code}"
+            company_info = (
+                f"Name: {company.name}, Address: {company.address}, "
+                f"GST: {company.gst_number}, PAN: {company.pan_number}, "
+                f"PF Code: {company.pf_code}, ESI Code: {company.esi_code}, "
+                f"PT Circle: {company.pt_circle}"
+            )
 
-        # 2. Employee Stats & List
-        total_employees = Employee.query.count()
+        # 2. User Info (Admins/Staff)
+        users = User.query.all()
+        users_info = "\n".join([f"- {u.name} ({u.role}, {u.email})" for u in users])
+
+        # 3. Employee Directory
         employees = Employee.query.all()
-        emp_list_str = "; ".join([f"{e.name} ({e.designation}, {e.department or 'N/A'})" for e in employees])
+        employees_info = "\n".join([
+            f"- {e.name} (ID: {e.id}, {e.designation}, Dept: {e.department}, "
+            f"Salary: {e.basic_salary}, Joined: {e.joining_date}, "
+            f"PAN: {e.pan}, UAN: {e.uan})" 
+            for e in employees
+        ])
 
-        # 3. Payroll Stats
-        now = datetime.now()
-        current_month = now.strftime('%B')
-        current_year = now.year
-        payroll_processed = db.session.query(func.sum(Payroll.net_salary)).filter_by(month=current_month, year=current_year).scalar() or 0.0
+        # 4. Payroll History (Recent)
+        # Limit to last 20 records to keep context size manageable
+        recent_payrolls = Payroll.query.order_by(Payroll.year.desc(), Payroll.month.desc()).limit(20).all()
+        payroll_info = "\n".join([
+            f"- {p.month} {p.year}: {p.employee.name} (Net: {p.net_salary}, Attendance: {p.attendance_days} days)"
+            for p in recent_payrolls
+        ])
 
         # Personalize the AI context for your MSME Payroll Software
         system_context = (
-            "You are a helpful AI assistant for an open-source payroll software designed for MSMEs. "
-            "You have access to the following live system data:\n"
-            f"Company: {company_details}\n"
-            f"Current Month: {current_month} {current_year}\n"
-            f"Total Employees: {total_employees}\n"
-            f"Payroll Processed: Rs. {payroll_processed:,.2f}\n"
-            f"Employee Directory: {emp_list_str}\n\n"
-            "The software automates oss msme finance management, generates legally compliant registers (Muster Roll), "
-            "reports (Form 16, PF/ESI), and returns for labor regulations. "
-            "Answer user queries based on this data. If asked about specific employees, use the directory."
+            "You are a helpful AI assistant for 'OSS MSME Finance', an open-source payroll software. "
+            "You have access to the following live database records (RAG Context):\n\n"
+            
+            "=== COMPANY DETAILS ===\n"
+            f"{company_info}\n\n"
+            
+            "=== SYSTEM USERS (Admins/Staff) ===\n"
+            f"{users_info}\n\n"
+            
+            "=== EMPLOYEE DIRECTORY ===\n"
+            f"{employees_info}\n\n"
+            
+            "=== RECENT PAYROLL RECORDS ===\n"
+            f"{payroll_info}\n\n"
+            
+            "Instructions:\n"
+            "1. Use the provided data to answer user queries accurately.\n"
+            "2. If asked about a specific employee, check the directory.\n"
+            "3. If asked about payroll, check the recent records.\n"
+            "4. If the information is not in the context, politely say you don't have that data.\n"
+            "5. Be concise and professional."
         )
 
         response = client.chat.completions(
