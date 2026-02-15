@@ -1,45 +1,37 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="mt-3">
     <h2 class="mb-4">Admin Dashboard</h2>
     
     <!-- Stats Cards -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card text-white bg-primary mb-3">
-                <div class="card-header">Total Employees</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ total_employees }}</h5>
-                    <p class="card-text">Active staff members</p>
-                </div>
+            <div class="stat-card border-green">
+                <h6 class="text-muted mb-2">Total Employees</h6>
+                <h3 class="text-green mb-0">{{ total_employees }}</h3>
+                <small class="text-muted">Active staff members</small>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-success mb-3">
-                <div class="card-header">Payroll Processed</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ payroll_processed }}</h5>
-                    <p class="card-text">For current month</p>
-                </div>
+            <div class="stat-card border-blue">
+                <h6 class="text-muted mb-2">Payroll Processed</h6>
+                <h3 class="text-blue mb-0">{{ payroll_processed }}</h3>
+                <small class="text-muted">For current month</small>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-warning mb-3">
-                <div class="card-header">Pending Reports</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ pending_reports }}</h5>
-                    <p class="card-text">Requires attention</p>
-                </div>
+            <div class="stat-card border-light-blue">
+                <h6 class="text-muted mb-2">Attendance</h6>
+                <h3 class="text-light-blue mb-0">{{ pending_reports }}</h3>
+                <small class="text-muted">Pending Reviews</small>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-danger mb-3">
-                <div class="card-header">Compliance Issues</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ compliance_issues }}</h5>
-                    <p class="card-text">Critical alerts</p>
-                </div>
+            <div class="stat-card border-red">
+                <h6 class="text-muted mb-2">Compliance</h6>
+                <h3 class="text-red mb-0">{{ compliance_issues }}</h3>
+                <small class="text-muted">Issues Detected</small>
             </div>
         </div>
     </div>
@@ -47,23 +39,15 @@
     <!-- Graphs Section -->
     <div class="row">
         <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    Attendance Trends (Last 6 Months)
-                </div>
-                <div class="card-body">
-                    <canvas id="attendanceChart" width="100%" height="40"></canvas>
-                </div>
+            <div class="chart-card">
+                <h5 class="mb-4">Attendance Trends</h5>
+                <canvas id="attendanceChart" width="100%" height="40"></canvas>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    Employee Distribution
-                </div>
-                <div class="card-body">
-                    <canvas id="deptChart" width="100%" height="80"></canvas>
-                </div>
+            <div class="chart-card">
+                <h5 class="mb-4">Employee Distribution</h5>
+                <canvas id="deptChart" width="100%" height="80"></canvas>
             </div>
         </div>
     </div>
@@ -77,81 +61,6 @@
         <path d="M16 8c0 3.866-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7zM5 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
     </svg>
 </a>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Attendance Chart
-    const ctx = document.getElementById('attendanceChart').getContext('2d');
-    const attendanceChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: {{ attendance_labels | tojson }},
-            datasets: [{
-                label: 'Average Attendance (Days)',
-                data: {{ attendance_data | tojson }},
-                borderColor: 'rgba(75, 192, 192, 1)',
-                tension: 0.1
-            }]
-        }
-    });
-
-    // Department Chart
-    const ctx2 = document.getElementById('deptChart').getContext('2d');
-    const deptChart = new Chart(ctx2, {
-        type: 'doughnut',
-        data: {
-            labels: {{ dept_labels | tojson }},
-            datasets: [{
-                data: {{ dept_data | tojson }},
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.8)',
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(255, 206, 86, 0.8)',
-                    'rgba(75, 192, 192, 0.8)'
-                ]
-            }]
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('addEmployeeForm');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(this);
-                
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const tbody = document.getElementById('employeeTableBody');
-                        const newRow = `
-                            <tr>
-                                <td>${data.employee.name}</td>
-                                <td>${data.employee.designation}</td>
-                                <td>${data.employee.email}</td>
-                                <td>${data.employee.joining_date}</td>
-                                <td>${data.employee.basic_salary}</td>
-                            </tr>
-                        `;
-                        tbody.insertAdjacentHTML('beforeend', newRow);
-                        this.reset();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-            });
-        }
-    });
-</script>
 
 <div class="mt-4">
     <h3>Employee Management</h3>
@@ -244,4 +153,43 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Attendance Chart (Blue Line)
+    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(attendanceCtx, {
+        type: 'line',
+        data: {
+            labels: {{ attendance_labels | tojson }},
+            datasets: [{
+                label: 'Average Attendance',
+                data: {{ attendance_data | tojson }},
+                borderColor: '#2563EB', // Blue
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: { plugins: { legend: { display: false } } }
+    });
+
+    // Department Chart (Green Bars)
+    const deptCtx = document.getElementById('deptChart').getContext('2d');
+    new Chart(deptCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ dept_labels | tojson }},
+            datasets: [{
+                label: 'Employees',
+                data: {{ dept_data | tojson }},
+                backgroundColor: '#10B981', // Green
+                borderRadius: 4
+            }]
+        },
+        options: { plugins: { legend: { display: false } } }
+    });
+</script>
 {% endblock %}
