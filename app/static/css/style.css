@@ -1,16 +1,49 @@
 /* Global Theme */
+:root {
+    --bg-body: #F3F4F6;
+    --text-main: #1F2937;
+    --text-muted: #6B7280;
+    --bg-card: #FFFFFF;
+    --border-color: #E5E7EB;
+    --input-bg: #FFFFFF;
+    --input-border: #D1D5DB;
+    --input-text: #111827;
+    --sidebar-bg: #FFFFFF;
+    --sidebar-active-bg: #EFF6FF;
+    --sidebar-hover-bg: #F9FAFB;
+    --sidebar-text: #6B7280;
+    --sidebar-text-hover: #111827;
+}
+
+body.dark-mode {
+    --bg-body: #121212;
+    --text-main: #FFFFFF;
+    --text-muted: #E5E5E5;
+    --bg-card: #1E1E1E;
+    --border-color: #333333;
+    --input-bg: #2D2D2D;
+    --input-border: #666666;
+    --input-text: #FFFFFF;
+    --sidebar-bg: #1E1E1E;
+    --sidebar-active-bg: #333333;
+    --sidebar-hover-bg: #333333;
+    --sidebar-text: #CCCCCC;
+    --sidebar-text-hover: #FFFFFF;
+}
+
 body {
-    background-color: #F3F4F6;
+    background-color: var(--bg-body);
     min-height: 100vh;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    color: #1F2937;
+    color: var(--text-main);
     overflow-x: hidden;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 /* Cards */
 .glass-card {
-    background: #FFFFFF;
-    border: 1px solid #E5E7EB;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 1rem;
     padding: 2rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -18,43 +51,43 @@ body {
 
 /* Typography */
 h2, h3, h4, h5 {
-    color: #111827;
+    color: var(--text-main);
     font-weight: 700;
     letter-spacing: -0.5px;
 }
 
 .text-light-gray {
-    color: #6B7280;
+    color: var(--text-muted);
     font-weight: 400;
 }
 
 /* Form Elements */
 .form-label {
-    color: #374151;
+    color: var(--text-main);
     font-weight: 500;
     margin-bottom: 0.5rem;
     font-size: 0.9rem;
 }
 
 .form-control {
-    background: #FFFFFF;
-    border: 1px solid #D1D5DB;
-    color: #111827;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
     padding: 0.875rem 1rem;
     border-radius: 0.5rem;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .form-control:focus {
-    background: #FFFFFF;
+    background: var(--input-bg);
     border-color: #2563EB;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    color: #111827;
+    color: var(--input-text);
     outline: none;
 }
 
 .form-control::placeholder {
-    color: #9CA3AF;
+    color: var(--text-muted);
 }
 
 /* Buttons */
@@ -116,6 +149,25 @@ a:hover {
     color: #FFFFFF !important;
 }
 
+/* Dark Mode Toggle Button */
+#darkModeToggle {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#darkModeToggle:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
 /* Alerts */
 .alert {
     border-radius: 0.5rem;
@@ -123,14 +175,14 @@ a:hover {
 
 /* Sidebar */
 .sidebar {
-    background-color: #FFFFFF;
+    background-color: var(--sidebar-bg);
     min-height: calc(100vh - 56px);
-    border-right: 1px solid #E5E7EB;
+    border-right: 1px solid var(--border-color);
     padding-top: 1.5rem;
 }
 
 .sidebar .nav-link {
-    color: #6B7280 !important;
+    color: var(--sidebar-text) !important;
     font-weight: 500;
     padding: 0.75rem 1.5rem;
     border-left: 3px solid transparent;
@@ -138,18 +190,18 @@ a:hover {
 
 .sidebar .nav-link.active {
     color: #2563EB !important;
-    background-color: #EFF6FF;
+    background-color: var(--sidebar-active-bg);
     border-left-color: #2563EB;
 }
 
 .sidebar .nav-link:hover:not(.active) {
-    color: #111827 !important;
-    background-color: #F9FAFB;
+    color: var(--sidebar-text-hover) !important;
+    background-color: var(--sidebar-hover-bg);
 }
 
 /* Dashboard Stats Cards */
 .stat-card {
-    background: #FFFFFF;
+    background: var(--bg-card);
     border-radius: 0.5rem;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -169,7 +221,7 @@ a:hover {
 
 /* Chart Containers */
 .chart-card {
-    background: #FFFFFF;
+    background: var(--bg-card);
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     margin-bottom: 1.5rem;

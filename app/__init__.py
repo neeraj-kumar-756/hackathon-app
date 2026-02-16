@@ -23,6 +23,7 @@ def create_app():
     from app.routes.report import report_bp
     from app.routes.chat import chat_bp
     from app.routes.company import company_bp
+    from app.routes.payroll import payroll_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -30,5 +31,6 @@ def create_app():
     app.register_blueprint(report_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(company_bp)
+    app.register_blueprint(payroll_bp)
 
     return app
