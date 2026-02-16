@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, flash, request, jsonify
-from app.models.model import User, Employee, db
+from app.models.model import User, Employee, Payroll, db
 from datetime import datetime
 
 employee_bp = Blueprint('employee', __name__)
@@ -57,6 +57,23 @@ def employee_dashboard():
         session.clear()
         flash('Session invalid. Please log in again.')
         return redirect(url_for('auth.login'))
-        
+    
+    if user.role == 'employee':
+        employee_data = Employee.query.filter_by(email=user.email).first()
+        payrolls = []
+        if employee_data:
+            payrolls = Payroll.query.filter_by(employee_id=employee_data.id).order_by(Payroll.year.desc(), Payroll.month.desc()).all()
+            # Calculate breakdown for display
+            for p in payrolls:
+                attendance = p.attendance_days if p.attendance_days is not None else 0.0
+                earned_basic = (employee_data.basic_salary / 30) * attendance
+                p.gross = round(earned_basic, 2)
+                p.pf = round(earned_basic * 0.12, 2)
+                p.esi = round(earned_basic * 0.0075, 2)
+                p.total_deductions = round(p.pf + p.esi, 2)
+        else:
+            flash('Employee profile not found. Please contact HR to link your account.')
+        return render_template('employee.html', user=user, employee=employee_data, payrolls=payrolls)
+
     employees = Employee.query.all()
     return render_template('employee.html', user=user, employees=employees)

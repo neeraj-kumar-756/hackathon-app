@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, flash
 from app.models.model import User, Employee, Payroll, db
 from sqlalchemy import func
 from datetime import datetime
@@ -15,6 +15,11 @@ def dashboard():
     if not user:
         session.clear()
         return redirect(url_for('auth.login'))
+
+    # Enforce Access Control: Only Admins can view the dashboard
+    if user.role != 'admin':
+        flash('Unauthorized: Access restricted to administrators.')
+        return redirect(url_for('employee.employee_dashboard'))
 
     # 1. Real-time Stats
     total_employees = Employee.query.count()

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mt-3">
+    <h2 class="mb-4">Payroll Management</h2>
+
+    <div class="row">
+        <!-- Attendance Management -->
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-info text-white">Update Attendance</div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('payroll.update_attendance') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Employee</label>
+                                <select name="employee_id" class="form-control" required>
+                                    {% for emp in employees %}
+                                    <option value="{{ emp.id }}">{{ emp.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Month</label>
+                                <select name="month" class="form-control" required>
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Year</label>
+                                <input type="number" name="year" class="form-control" value="2025" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Days Present</label>
+                                <input type="number" step="0.5" name="present_days" class="form-control" max="31" min="0" required>
+                            </div>
+                            <div class="col-md-4 mb-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-info text-white w-100">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    <!-- Generate Payroll Form -->
+    <div class="col-md-6">
+    <div class="card mb-4 shadow-sm h-100">
+        <div class="card-header bg-primary text-white">Generate Monthly Payroll</div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('payroll.generate_payroll') }}">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Employee</label>
+                        <select name="employee_id" class="form-control" required>
+                            <option value="">Select Employee</option>
+                            {% for emp in employees %}
+                            <option value="{{ emp.id }}">{{ emp.name }} ({{ emp.designation }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Month</label>
+                        <select name="month" class="form-control" required>
+                            <option value="January">January</option>
+                            <option value="February">February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December">December</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Year</label>
+                        <input type="number" name="year" class="form-control" value="2025" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Manual Days</label>
+                        <input type="number" step="0.5" name="attendance_days" class="form-control" placeholder="Optional">
+                        <small class="text-muted" style="font-size: 0.7rem;">Overrides DB if set</small>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <button type="submit" class="btn btn-primary w-100">Generate</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- Payroll History -->
+    <div class="card shadow-sm">
+        <div class="card-header">Payroll History</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Generated Date</th>
+                            <th>Employee</th>
+                            <th>Period</th>
+                            <th>Attendance</th>
+                            <th>Net Salary</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payrolls %}
+                        <tr>
+                            <td>{{ p.generated_at.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ p.employee.name }}</td>
+                            <td>{{ p.month }} {{ p.year }}</td>
+                            <td>{{ p.attendance_days }} Days</td>
+                            <td class="fw-bold text-success">Rs. {{ p.net_salary }}</td>
+                            <td>
+                                <a href="{{ url_for('payroll.delete_payroll', id=p.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this record?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No payroll records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -46,7 +46,7 @@ class Payroll(db.Model):
     month = db.Column(db.String(20), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     net_salary = db.Column(db.Float, nullable=False)
-    attendance_days = db.Column(db.Integer, default=0)
+    attendance_days = db.Column(db.Float, default=0.0)
     generated_at = db.Column(db.DateTime, default=db.func.now())
 
     employee = db.relationship('Employee', backref=db.backref('payrolls', lazy=True))
@@ -63,3 +63,14 @@ class Company(db.Model):
     pf_code = db.Column(db.String(20))
     esi_code = db.Column(db.String(20))
     pt_circle = db.Column(db.String(50))
+
+class Attendance(db.Model):
+    __tablename__ = 'attendance'
+
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=False)
+    month = db.Column(db.String(20), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    present_days = db.Column(db.Float, nullable=False, default=0.0)
+    
+    employee = db.relationship('Employee', backref=db.backref('attendance_records', lazy=True))
