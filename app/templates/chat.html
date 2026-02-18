@@ -1,31 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex flex-column" style="height: 85vh;">
-    <div class="card flex-grow-1 shadow-sm border-0">
-        <div class="card-header bg-white border-bottom py-3">
-            <h5 class="mb-0 text-center fw-bold text-primary">Payroll AI Assistant</h5>
+<div class="chat-wrapper">
+    <div class="chat-card">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <h5>Payroll AI Assistant</h5>
         </div>
-        
-        <div id="chat-container" class="card-body overflow-auto p-4" style="background-color: #f9fafb;">
-            <div class="d-flex justify-content-start mb-4">
-                <div class="p-3 rounded-3 bg-white border shadow-sm" style="max-width: 80%;">
+
+        <!-- Chat Messages Container -->
+        <div id="chat-container" class="chat-container">
+            <div class="chat-message ai-message">
+                <div class="chat-message-bubble ai">
                     <strong>AI:</strong> Hello! I can help you with payroll management, compliance reports, and labor regulations. How can I assist you today?
                 </div>
             </div>
         </div>
-        
-        <div class="card-footer bg-white border-top p-4">
-            <div class="container" style="max-width: 800px;">
-                <div class="input-group input-group-lg shadow-sm rounded-pill">
-                    <input type="text" id="user-input" class="form-control border-0 bg-light ps-4" placeholder="Message Payroll AI..." autocomplete="off" style="border-radius: 50px 0 0 50px;">
-                    <button class="btn btn-primary pe-4" type="button" id="send-btn" style="border-radius: 0 50px 50px 0;">
-                        Send
-                    </button>
-                </div>
-                <div class="text-center mt-2">
-                    <small class="text-muted" style="font-size: 0.75rem;">AI generated responses may vary.</small>
-                </div>
+
+        <!-- Chat Footer with Input -->
+        <div class="chat-footer">
+            <div class="chat-input-group">
+                <input type="text" id="user-input" class="chat-input" placeholder="Message Payroll AI..." autocomplete="off">
+                <button class="chat-send-btn" type="button" id="send-btn">Send</button>
+            </div>
+            <div class="chat-footer-note">
+                <small>AI generated responses may vary.</small>
             </div>
         </div>
     </div>

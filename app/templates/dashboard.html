@@ -54,9 +54,7 @@
 </div>
 
 <!-- Floating Chat Button -->
-<a href="{{ url_for('chat.chat_interface') }}" class="btn btn-primary rounded-circle shadow-lg" 
-   style="position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; z-index: 1000;"
-   title="Chat with AI Assistant">
+<a href="{{ url_for('chat.chat_interface') }}" class="fab-chat" title="Chat with AI Assistant">
     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
         <path d="M16 8c0 3.866-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7zM5 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
     </svg>
@@ -158,38 +156,185 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Attendance Chart (Blue Line)
-    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
-    new Chart(attendanceCtx, {
-        type: 'line',
-        data: {
-            labels: {{ attendance_labels | tojson }},
-            datasets: [{
-                label: 'Average Attendance',
-                data: {{ attendance_data | tojson }},
-                borderColor: '#2563EB', // Blue
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                tension: 0.3,
-                fill: true
-            }]
-        },
-        options: { plugins: { legend: { display: false } } }
-    });
+    /**
+     * Initialize dashboard charts with dark mode support
+     */
+    function initializeCharts() {
+        // Get current theme
+        const theme = document.documentElement.getAttribute('data-theme') || 'light';
 
-    // Department Chart (Green Bars)
-    const deptCtx = document.getElementById('deptChart').getContext('2d');
-    new Chart(deptCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ dept_labels | tojson }},
-            datasets: [{
-                label: 'Employees',
-                data: {{ dept_data | tojson }},
-                backgroundColor: '#10B981', // Green
-                borderRadius: 4
-            }]
-        },
-        options: { plugins: { legend: { display: false } } }
-    });
+        // Define theme-specific colors
+        const textColor = theme === 'dark' ? '#E0E0E0' : '#1F2937';
+        const gridColor = theme === 'dark' ? '#3F3F3F' : '#E5E7EB';
+
+        // Configure Chart.js defaults for dark mode
+        Chart.defaults.color = textColor;
+        Chart.defaults.borderColor = gridColor;
+
+        // Initialize Attendance Chart
+        initAttendanceChart(textColor, gridColor);
+
+        // Initialize Department Chart
+        initDeptChart(textColor, gridColor);
+
+        // Re-initialize charts when theme changes
+        document.addEventListener('themechange', function(e) {
+            const newTheme = e.detail.theme;
+            const newTextColor = newTheme === 'dark' ? '#E0E0E0' : '#1F2937';
+            const newGridColor = newTheme === 'dark' ? '#3F3F3F' : '#E5E7EB';
+
+            Chart.defaults.color = newTextColor;
+            Chart.defaults.borderColor = newGridColor;
+
+            // Destroy and reinitialize charts
+            Object.keys(Chart.instances).forEach(key => {
+                Chart.instances[key].destroy();
+            });
+
+            initAttendanceChart(newTextColor, newGridColor);
+            initDeptChart(newTextColor, newGridColor);
+        });
+    }
+
+    /**
+     * Initialize Attendance Line Chart
+     */
+    function initAttendanceChart(textColor, gridColor) {
+        const canvas = document.getElementById('attendanceChart');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.error('Could not get canvas context for attendance chart');
+            return;
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ attendance_labels | tojson }},
+                datasets: [{
+                    label: 'Average Attendance',
+                    data: {{ attendance_data | tojson }},
+                    borderColor: '#2563EB',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#2563EB',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            color: textColor,
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        grid: {
+                            color: gridColor,
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: textColor
+                        },
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Initialize Department Bar Chart
+     */
+    function initDeptChart(textColor, gridColor) {
+        const canvas = document.getElementById('deptChart');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.error('Could not get canvas context for department chart');
+            return;
+        }
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ dept_labels | tojson }},
+                datasets: [{
+                    label: 'Employees',
+                    data: {{ dept_data | tojson }},
+                    backgroundColor: '#10B981',
+                    borderColor: '#059669',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    hoverBackgroundColor: '#059669'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            color: textColor
+                        },
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: textColor,
+                            beginAtZero: true
+                        },
+                        grid: {
+                            color: gridColor,
+                            drawBorder: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize charts when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeCharts);
+    } else {
+        initializeCharts();
+    }
 </script>
 {% endblock %}
